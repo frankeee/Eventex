@@ -35,10 +35,14 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.lang.Thread.sleep;
 
 
 public class profilefragment extends Fragment {
@@ -47,7 +51,7 @@ public class profilefragment extends Fragment {
     ImageView imagenBoton;
     TextView nombre,descricao;
     ImageButton editor;
-    String uriImagen,titu,decricao,imagos,autor,precio,like,direccion,idoque;
+    String uriImagen,titu,decricao,imagos,autor,precio,like,direccion,idoque,toti,coni,nome;
     Button creaEvent;
     Map<String, Object> getter;
     FirebaseFirestore db;
@@ -55,16 +59,22 @@ public class profilefragment extends Fragment {
     DocumentReference docRef;
     List<String> titulos;
     List<String> decripciones;
-    List<String> imagenes;
+    List<Bitmap> imagenes;
     List<String> autores;
     List<String> precios;
     List<String> likes;
     List<String> idsEventos;
     List<String> direcciones;
+    List<String> urlImagenes;
+    List<String> nombreAutor;
+    List<String> imagenPerfilautor;
+    int r;
     View rootView ;
     FirebaseStorage storage;
     String idParaImagen;
     File localFile;
+    Cursor cursor2;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -77,6 +87,8 @@ public class profilefragment extends Fragment {
         descricao = rootView.findViewById(R.id.descricri);
         editor = rootView.findViewById(R.id.imageEditor);
         creaEvent = rootView.findViewById(R.id.btnCreaEvent);
+        nombreAutor = new ArrayList<String>();
+        imagenPerfilautor = new ArrayList<>();
         titulos  = new ArrayList<String>();
         decripciones = new ArrayList<String>();
         imagenes = new ArrayList<>();
@@ -85,9 +97,11 @@ public class profilefragment extends Fragment {
         likes = new ArrayList<>();
         idsEventos = new ArrayList<>();
         direcciones = new ArrayList<>();
+        urlImagenes = new ArrayList<>();
+        r =1;
         if(existe()) {
             Cursor cursor = getDatardis();
-            String nome = " peru";
+            nome = "";
             String descripcion = "noque";
             uriImagen = "";
             if (cursor != null && cursor.moveToFirst()) {
@@ -99,98 +113,36 @@ public class profilefragment extends Fragment {
             }
             descricao.setText(descripcion);
             nombre.setText(nome);
-            /*
-            if (uriImagen != "") {
-                imagenBoton.setImageURI(Uri.parse(uriImagen));
-            }
-            */
-            docRef = db.collection("usuarios").document(idParaImagen);
-            docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                    if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-                        if (document.exists()) {
-                            getter = document.getData();
-                            if (getter != null) {
-                                titu = getter.get("imagen").toString();
-                                if (titu != "") {
-                                    StorageReference gsReference = storage.getReferenceFromUrl(titu);
-                                    try {
-                                        localFile = File.createTempFile("images", "jpg");
-                                        gsReference.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                                            @Override
-                                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                                                // Local temp file has been created
-                                                Bitmap myBitmap = BitmapFactory.decodeFile(localFile.getAbsolutePath());
-                                                imagenBoton.setImageBitmap(myBitmap);
-                                            }
-                                        });
 
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-
-
-                                }
-
+            try {
+                if (uriImagen != "") {
+                    StorageReference gsReference = storage.getReferenceFromUrl(toti);
+                    try {
+                        localFile = File.createTempFile("images", "jpg");
+                        gsReference.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                // Local temp file has been created
+                                Bitmap myBitmap = BitmapFactory.decodeFile(localFile.getAbsolutePath());
+                                imagenBoton.setImageBitmap(myBitmap);
                             }
-                        }
+                        });
+                    } catch (IOException r) {
+                        r.printStackTrace();
                     }
                 }
-            });
+            } catch (Exception q) {
 
-
+            }
 
 
         }
 
-        Cursor cursor2 = myDb.getTodoMisEventos();
-        /*
-        if(cursor2 != null) {
-            while(cursor2.moveToNext()){
-                ido =cursor2.getString(cursor2.getColumnIndex("ID"));
-                docRef = db.collection("eventos").document(ido);
-                docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot document = task.getResult();
-                            if (document.exists()) {
-                                getter = document.getData();
-                                if(getter!=null) {
-                                    titu = getter.get("nombre").toString();
-                                    titulos.add(titu);
-                                    decricao = getter.get("descripcion").toString();
-                                    decripciones.add(decricao);
-                                    autor = getter.get("autor").toString();
-                                    autores.add(autor);
-                                    precio = getter.get("valor").toString();
-                                    precios.add(precio);
-                                    like = getter.get("likes").toString();
-                                    likes.add(like);
-                                    direccion = getter.get("direccion").toString();
-                                    direcciones.add(direccion);
-                                    imagenes.add("");
-                                    idsEventos.add(ido);
-                                    RecyclerView recyclerView = rootView.findViewById(R.id.ProfileRecycler);
-                                    recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-                                    homefragment.MyAdapter mAdapter = new homefragment.MyAdapter(titulos,decripciones,imagenes,direcciones,likes,autores,precios,idsEventos);
-                                    recyclerView.setAdapter(mAdapter);
-                                    recyclerView.setItemAnimator(new DefaultItemAnimator());
-                                }
+        cursor2 = myDb.getTodoMisEventos();
+        if(cursor2.moveToFirst()&&cursor2!=null) {
+            creadorListas(cursor2);
+        }
 
-                            }
-                        }
-                    }
-                });
-                //getter = getFirebaseEvent(db,ido);
-
-
-            }
-            cursor2.close();
-            }
-        */
         editor.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
@@ -227,44 +179,74 @@ public class profilefragment extends Fragment {
         Cursor cursor = myDb.getTodoDatos();
         return cursor;
     }
-/*
-    public Map<String, Object> getFirebaseEvent(FirebaseFirestore db,String id){
-        Toast.makeText(getActivity(), "llamo a la funcion", Toast.LENGTH_LONG).show();
-        DocumentReference docRef = db.collection("eventos").document(id);
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        Toast.makeText(getActivity(), "encontro el archivo", Toast.LENGTH_LONG).show();
-                        getter=document.getData();
-                        titu = getter.get("nombre").toString();
-                        titulos.add(titu);
-                        decricao = getter.get("descripcion").toString();
-                        decripciones.add(decricao);
-                        autor = getter.get("autor").toString();
-                        autores.add(autor);
-                        precio =getter.get("valor").toString();
-                        precios.add(precio);
-                        like =getter.get("likes").toString();
-                        likes.add(like);
-                        direccion =getter.get("direccion").toString();
-                        direcciones.add(direccion);
-                        imagenes.add("");
-                        idsEventos.add(id);
-                    } else {
 
+    public void eventImageGet(String urls){
+
+        StorageReference gsReference = storage.getReferenceFromUrl(urls);
+        try {
+            localFile = File.createTempFile("images", "jpg");
+            gsReference.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    // Local temp file has been created
+                    Bitmap myBitmap = BitmapFactory.decodeFile(localFile.getAbsolutePath());
+                    imagenes.add(myBitmap);
+
+                    if(cursor2.moveToNext()) {
+                        creadorListas(cursor2);
                     }
-                } else {
-
+                    else{
+                        cursor2.close();
+                        RecyclerView recyclerView = rootView.findViewById(R.id.ProfileRecycler);
+                        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+                        homefragment.MyAdapter mAdapter = new homefragment.MyAdapter(titulos.subList(0, imagenes.size()), decripciones.subList(0, imagenes.size()), imagenes, direcciones.subList(0, imagenes.size()), likes.subList(0, imagenes.size()), autores.subList(0, imagenes.size()), precios.subList(0, imagenes.size()), idsEventos.subList(0, imagenes.size()),nombreAutor,imagenPerfilautor);
+                        recyclerView.setAdapter(mAdapter);
+                        recyclerView.setItemAnimator(new DefaultItemAnimator());
+                    }
                 }
-            }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-        });
+    public void creadorListas(Cursor cursor2){
 
+        if(cursor2 != null) {
+            ido =cursor2.getString(cursor2.getColumnIndex("ID"));
+            docRef = db.collection("eventos").document(ido);
+            docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document.exists()) {
+                            getter = document.getData();
+                            if(getter!=null) {
+                                titu = getter.get("nombre").toString();
+                                titulos.add(titu);
+                                nombreAutor.add(nome);
+                                imagenPerfilautor.add(uriImagen);
+                                decricao = getter.get("descripcion").toString();
+                                decripciones.add(decricao);
+                                autor = getter.get("autor").toString();
+                                autores.add(autor);
+                                precio = getter.get("valor").toString();
+                                precios.add(precio);
+                                like = getter.get("likes").toString();
+                                likes.add(like);
+                                direccion = getter.get("direccion").toString();
+                                direcciones.add(direccion);
+                                idsEventos.add(ido);
+                                coni = getter.get("imagen").toString();
+                                urlImagenes.add(coni);
+                                eventImageGet(coni);
+                                }
+                        }
+                        }
+                    }
+                });
+        }
+    }
 
-
-        return getter;
-    }*/
 }

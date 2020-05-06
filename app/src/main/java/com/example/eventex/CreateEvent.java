@@ -1,6 +1,10 @@
 package com.example.eventex;
 
+import android.Manifest;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,18 +13,28 @@ import android.provider.MediaStore;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,11 +45,15 @@ public class CreateEvent extends AppCompatActivity {
     Cursor curseado;
     Button aceptador;
     ImageButton imagenBota;
-    EditText titulo,descripcion,direccion,valorentrada,autorr,catu;
+    EditText titulo,descripcion,direccion,valorentrada,catu;
     DatabaseHelper myDb;
     String path,juan;
     Uri pachon;
     FirebaseFirestore db;
+    FirebaseStorage storage ;
+    DocumentReference docRef;
+    Uri downloadUri;
+    int s;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,15 +66,24 @@ public class CreateEvent extends AppCompatActivity {
         imagenBota = findViewById(R.id.imagen1);
         valorentrada = findViewById(R.id.valorentrada);
         catu = findViewById(R.id.categoria);
-        autorr = findViewById(R.id.autor);
         path = "";
+        pachon = Uri.parse(path);
         db = FirebaseFirestore.getInstance();
+        storage = FirebaseStorage.getInstance();
 
         aceptador.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        addEvento(db);
+                        if(pachon.toString()==""){
+                            dialogCreator();
+                        }
+                        else {
+                            addEvento(db);
+                            Intent intento = new Intent(getApplicationContext(), MainActivity.class);
+                            intento.putExtra("EXTRA", "1");
+                            startActivity(intento);
+                        }
                     }
                 }
         );
@@ -64,8 +91,15 @@ public class CreateEvent extends AppCompatActivity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        performFileSearch();
-                    }
+                        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+                                != PackageManager.PERMISSION_GRANTED) {
+                            // Permission is not granted
+                            ActivityCompat.requestPermissions(CreateEvent.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},s );
+                        }
+                        else {
+                            performFileSearch();
+                        }
+                        }
                 }
         );
 
@@ -85,6 +119,7 @@ public class CreateEvent extends AppCompatActivity {
 
 
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data){
+        try{
         final int takeFlags = data.getFlags()
                 & (Intent.FLAG_GRANT_READ_URI_PERMISSION
                 | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -122,7 +157,7 @@ public class CreateEvent extends AppCompatActivity {
 
 
 
-        pachon = data.getData();
+        pachon = data.getData();}catch(Exception e){}
 
     }
 
@@ -135,6 +170,7 @@ public class CreateEvent extends AppCompatActivity {
         String dire = direccion.getText().toString();
         String valor = valorentrada.getText().toString();
         String autor = "fallo";
+        String nombreAutor ="";
         String cati = catu.getText().toString();
         curseado = myDb.getTodoDatos();
         if(curseado!=null && curseado.moveToFirst()) {
@@ -148,9 +184,11 @@ public class CreateEvent extends AppCompatActivity {
         user.put("likes",0);
         user.put("valor",valor);
         user.put("categoria",cati);
+        user.put("imagen","");
         // Add a new document with a generated ID
         final String autor1 = autor;
         final FirebaseFirestore db1 = db;
+        final FirebaseFirestore db2 = db;
         db.collection("eventos")
                 .add(user)
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
@@ -159,6 +197,32 @@ public class CreateEvent extends AppCompatActivity {
                         juan =documentReference.getId();
                         myDb.insertEvento(juan);
                         addEventoalAutor(db1,autor1,juan);
+                        StorageReference storeRef = storage.getReference();
+                        final StorageReference imageRef = storeRef.child("images/"+juan+"/profile.jpg");
+                        UploadTask uploader = imageRef.putFile(pachon);
+                        Task<Uri> urlTask = uploader.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                            @Override
+                            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                                if (!task.isSuccessful()) {
+                                    throw task.getException();
+                                }
+
+                                // Continue with the task to get the download URL
+                                return imageRef.getDownloadUrl();
+                            }
+                        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Uri> task) {
+                                if (task.isSuccessful()) {
+                                    downloadUri = task.getResult();
+
+                                    updateImagenEvento(db2,juan);
+                                } else {
+                                    // Handle failures
+                                    // ...
+                                }
+                            }
+                        });
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -174,5 +238,27 @@ public class CreateEvent extends AppCompatActivity {
 
         updater.update("eventos", FieldValue.arrayUnion(id_evento));
 
+    }
+    public void updateImagenEvento(FirebaseFirestore db,String id){
+        DocumentReference updater = db.collection("eventos").document(id);
+        updater.update("imagen",downloadUri.toString());
+    }
+
+    public Dialog dialogCreator() {
+        // Use the Builder class for convenient dialog construction
+
+        //final EditText editor = new EditText(this);
+
+        AlertDialog.Builder constructor = new AlertDialog.Builder(this);
+        constructor.setMessage("Elija una imagen")
+                .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // FIRE ZE MISSILES!
+
+                    }
+                });
+                //.setView(editor);
+        // Create the AlertDialog object and return it
+        return constructor.show();
     }
 }

@@ -11,18 +11,9 @@
         android:layout_width="136dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="60dp"
-        android:layout_marginBottom="13dp"
-        app:layout_constraintBottom_toTopOf="@+id/autor"
+        android:layout_marginBottom="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/categoria"
         app:layout_constraintStart_toEndOf="@+id/textView10" />
-
-    <EditText
-        android:id="@+id/autor"
-        android:layout_width="136dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="85dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/imagen1"
-        app:layout_constraintStart_toEndOf="@+id/textView12" />
 
     <EditText
         android:id="@+id/valorentrada"
@@ -73,25 +64,25 @@
         android:layout_width="89dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="100dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="28dp"
         android:text="Direccion"
-        app:layout_constraintBottom_toTopOf="@+id/textView12"
+        app:layout_constraintBottom_toTopOf="@+id/textView"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/aceptEvent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="156dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="160dp"
+        android:layout_marginBottom="180dp"
         android:text="LISTO"
-        app:layout_constraintBottom_toTopOf="@+id/categoria"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <ImageButton
         android:id="@+id/imagen1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="96dp"
+        android:layout_height="91dp"
         android:layout_marginStart="180dp"
         android:layout_marginEnd="160dp"
         app:layout_constraintBottom_toTopOf="@+id/aceptEvent"
@@ -124,32 +115,22 @@
         app:layout_constraintVertical_bias="0.482" />
 
     <TextView
-        android:id="@+id/textView12"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="108dp"
-        android:layout_marginBottom="8dp"
-        android:text="Autor"
-        app:layout_constraintBottom_toTopOf="@+id/imagen1"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="91dp"
-        android:layout_marginBottom="155dp"
+        android:layout_marginStart="107dp"
+        android:layout_marginBottom="36dp"
         android:text="categoria"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/imagen1"
         app:layout_constraintStart_toStartOf="parent" />
 
     <EditText
         android:id="@+id/categoria"
         android:layout_width="136dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="76dp"
-        android:layout_marginBottom="143dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/textView" />
+        android:layout_marginEnd="36dp"
+        android:layout_marginBottom="24dp"
+        app:layout_constraintBottom_toTopOf="@+id/imagen1"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

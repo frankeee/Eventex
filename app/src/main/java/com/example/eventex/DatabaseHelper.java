@@ -110,12 +110,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_1,nombre);
         contentValues.put(COL_2,descripcion);
         contentValues.put(COL_4,direccion);
-        contentValues.put(COL_3,imagenUri);
+        if(imagenUri!=""){
+            contentValues.put(COL_3,imagenUri);
+        }
         String juan = id;
 
         db.update(TABLE_NAME, contentValues, "ID = ?",new String[] {juan });
         return true;
     }
+
+    public boolean updateImagen(String id,String imagenUri) {
+        if(imagenUri!="") {
+            SQLiteDatabase db = this.getWritableDatabase();
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(COL_0, id);
+            contentValues.put(COL_3, imagenUri);
+            String juan = id;
+
+            db.update(TABLE_NAME, contentValues, "ID = ?", new String[]{juan});
+        }
+        return true;
+    }
+
     public boolean insertEvento(String id) {//String nombre,String descripcion,String direccion,String categoria,String fecha,String imagen,String valorentrada,String usuario
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -142,7 +158,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_0,id);
         contentValues.put(COL_1,nombre);
         contentValues.put(COL_2,descripcion);
-        //contentValues.put(COL_3,"");
+        contentValues.put(COL_3,"");
         contentValues.put(COL_4,direccion);
         long result = db.insert(TABLE_NAME,null ,contentValues);
         if(result == -1)
@@ -174,7 +190,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             return true;
     }
 
-    public boolean insertGuardados(int guardado){
+    public boolean insertGuardados(String guardado){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(COL_5,guardado);

@@ -1,6 +1,8 @@
 package com.example.eventex;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,6 +12,9 @@ import android.provider.MediaStore;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -37,13 +42,13 @@ public class SettingsActivity extends AppCompatActivity {
     Button acepto;
     ImageButton imagonBoton;
     DatabaseHelper myDb;
-    String path,juan,bebe;
+    String path,juan,bebe,coca;
     Uri pachon;
     FirebaseFirestore db;
     public static final int PICK_IMAGE = 1;
     FirebaseStorage storage;
     Uri downloadUri;
-
+    int s;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +63,7 @@ public class SettingsActivity extends AppCompatActivity {
         imagonBoton = findViewById(R.id.settingImage);
         direccion = findViewById(R.id.direccion);
         path = "";
+        pachon = Uri.parse(path);
         Intent intent = getIntent();
         String NOME = intent.getStringExtra("EXTRA_MESSAGE");
         String DERI = intent.getStringExtra("EXTRA_MESSAGE2");
@@ -74,49 +80,52 @@ public class SettingsActivity extends AppCompatActivity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (pachon != null) {
-                            path = pachon.toString();
+
+                        if (!myDb.existeUsuario()) {
+                            addUsuario(db);
+                        } else {
+                            Cursor cursor = myDb.getTodoDatos();
+                            if (cursor != null && cursor.moveToFirst()) {
+                                bebe = cursor.getString(cursor.getColumnIndex("ID"));
+                                cursor.close();
+                                updateUsuario(db, bebe);
+                            }
                         }
-                       if(!myDb.existeUsuario()){
-                           addUsuario(db);
-                       }
-                       else{
-                           Cursor cursor = myDb.getTodoDatos();
-                           if(cursor!=null && cursor.moveToFirst()){
-                               bebe = cursor.getString(cursor.getColumnIndex("ID"));
-                               cursor.close();
-                           }
-                           StorageReference storeRef = storage.getReference();
-                           final StorageReference imageRef = storeRef.child("images/"+bebe+"/profile.jpg");
-                           UploadTask uploader = imageRef.putFile(pachon);
-                           Task<Uri> urlTask = uploader.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-                               @Override
-                               public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-                                   if (!task.isSuccessful()) {
-                                       throw task.getException();
-                                   }
+                        if (pachon != null) {
 
-                                   // Continue with the task to get the download URL
-                                   return imageRef.getDownloadUrl();
-                               }
-                           }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-                               @Override
-                               public void onComplete(@NonNull Task<Uri> task) {
-                                   if (task.isSuccessful()) {
-                                       downloadUri = task.getResult();
-                                       updateUsuario(db,bebe);
-                                   } else {
-                                       // Handle failures
-                                       // ...
-                                   }
-                               }
-                           });
+                        StorageReference storeRef = storage.getReference();
+                        final StorageReference imageRef = storeRef.child("images/" + bebe + "/profile.jpg");
+                        UploadTask uploader = imageRef.putFile(pachon);
+                        Task<Uri> urlTask = uploader.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                            @Override
+                            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                                if (!task.isSuccessful()) {
+                                    throw task.getException();
+                                }
 
-
-
-
-
-                       }
+                                // Continue with the task to get the download URL
+                                return imageRef.getDownloadUrl();
+                            }
+                        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Uri> task) {
+                                if (task.isSuccessful()) {
+                                    downloadUri = task.getResult();
+                                    Cursor cursorsix = myDb.getTodoDatos();
+                                    if (cursorsix.moveToFirst()) {
+                                        coca = cursorsix.getString(cursorsix.getColumnIndex("ID"));
+                                        updateImagen(db, coca);
+                                    }
+                                } else {
+                                    // Handle failures
+                                    // ...
+                                }
+                            }
+                        });
+                    }
+                       Intent intento = new Intent(getApplicationContext(),MainActivity.class);
+                       intento.putExtra("EXTRA","1");
+                       startActivity(intento);
                     }
                 }
         );
@@ -124,7 +133,14 @@ public class SettingsActivity extends AppCompatActivity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        performFileSearch();
+                        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+                                != PackageManager.PERMISSION_GRANTED) {
+                            // Permission is not granted
+                            ActivityCompat.requestPermissions(SettingsActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},s );
+                        }
+                        else {
+                            performFileSearch();
+                        }
                     }
                 }
         );
@@ -144,43 +160,45 @@ public class SettingsActivity extends AppCompatActivity {
 
 
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        final int takeFlags = data.getFlags()
-                & (Intent.FLAG_GRANT_READ_URI_PERMISSION
-                | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        switch (requestCode) {
-            case 0:
-                if (resultCode == RESULT_OK && data != null) {
-                    Bitmap selectedImage = (Bitmap) data.getExtras().get("data");
-                    imagonBoton.setImageBitmap(selectedImage);
-                }
-
-                break;
-            case 1:
-                if (resultCode == RESULT_OK && data != null) {
-
-                    Uri selectedImage = data.getData();
-                    //getContentResolver().takePersistableUriPermission(selectedImage, takeFlags);
-                    String[] filePathColumn = {MediaStore.Images.Media.DATA};
-                    if (selectedImage != null) {
-                        Cursor cursor = getContentResolver().query(selectedImage,
-                                filePathColumn, null, null, null);
-                        if (cursor != null) {
-                            cursor.moveToFirst();
-
-                            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                            String picturePath = cursor.getString(columnIndex);
-                            imagonBoton.setImageBitmap(BitmapFactory.decodeFile(picturePath));
-                            cursor.close();
-                        }
+        try {
+            final int takeFlags = data.getFlags()
+                    & (Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            switch (requestCode) {
+                case 0:
+                    if (resultCode == RESULT_OK && data != null) {
+                        Bitmap selectedImage = (Bitmap) data.getExtras().get("data");
+                        imagonBoton.setImageBitmap(selectedImage);
                     }
 
-                }
-                break;
-        }
+                    break;
+                case 1:
+                    if (resultCode == RESULT_OK && data != null) {
+
+                        Uri selectedImage = data.getData();
+                        //getContentResolver().takePersistableUriPermission(selectedImage, takeFlags);
+                        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+                        if (selectedImage != null) {
+                            Cursor cursor = getContentResolver().query(selectedImage,
+                                    filePathColumn, null, null, null);
+                            if (cursor != null) {
+                                cursor.moveToFirst();
+
+                                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                                String picturePath = cursor.getString(columnIndex);
+                                imagonBoton.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+                                cursor.close();
+                            }
+                        }
+
+                    }
+                    break;
+            }
 
 
-        path = data.getData().getPath();
-        pachon = data.getData();
+            path = data.getData().getPath();
+            pachon = data.getData();
+        }catch(Exception e){}
 
     }
 
@@ -195,6 +213,7 @@ public class SettingsActivity extends AppCompatActivity {
         user.put("guardados", Arrays.asList());
         user.put("seguidos", Arrays.asList());
         user.put("eventos",Arrays.asList());
+        user.put("imagen","");
         // Add a new document with a generated ID
         db.collection("usuarios")
                 .add(user)
@@ -203,6 +222,8 @@ public class SettingsActivity extends AppCompatActivity {
                     public void onSuccess(DocumentReference documentReference) {
                         juan =documentReference.getId();
                         myDb.insertDatos(juan,nombre.getText().toString(),descripcion.getText().toString(),direccion.getText().toString());
+                        myDb.updateImagen(juan,pachon.toString());
+
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -226,8 +247,8 @@ public class SettingsActivity extends AppCompatActivity {
         if(direccion.getText().toString()!="") {
             updater.update("direccion", direccion.getText().toString());
         }
-        updater.update("imagen",downloadUri.toString());
-        myDb.updateDatos(id,nombre.getText().toString(),descripcion.getText().toString(),direccion.getText().toString(),"");
+        //updater.update("imagen",downloadUri.toString());
+        myDb.updateDatos(id,nombre.getText().toString(),descripcion.getText().toString(),direccion.getText().toString(),pachon.toString());
                 /*
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -241,6 +262,12 @@ public class SettingsActivity extends AppCompatActivity {
 
                     }
                 });*/
+
+
+    }
+    public void updateImagen(FirebaseFirestore db,String id){
+        DocumentReference updater = db.collection("usuarios").document(id);
+        updater.update("imagen",downloadUri.toString());
 
 
     }

@@ -8,13 +8,12 @@
     <Button
         android:id="@+id/nombre"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_height="39dp"
         android:layout_marginTop="60dp"
         android:text="TextView"
         android:textAppearance="@style/TextAppearance.AppCompat"
         android:textSize="30sp"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/imagenPerfil"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
@@ -75,30 +74,48 @@
 
     <TextView
         android:id="@+id/direccion"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:layout_marginEnd="76dp"
+        android:layout_width="76dp"
+        android:layout_height="29dp"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="68dp"
         android:text="TextView"
-        app:layout_constraintEnd_toStartOf="@+id/valorentrada"
+        app:layout_constraintStart_toEndOf="@+id/nombre"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/valorentrada"
         android:layout_width="wrap_content"
-        android:layout_height="14dp"
-        android:layout_marginTop="70dp"
-        android:layout_marginEnd="28dp"
+        android:layout_height="15dp"
+        android:layout_marginTop="84dp"
+        android:layout_marginEnd="84dp"
         android:text="TextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/id"
+        android:id="@+id/idEvento"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="TextView"
         android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+    <TextView
+        android:id="@+id/idUsuario"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imagenPerfil"
+        android:layout_width="41dp"
+        android:layout_height="33dp"
+        android:layout_marginStart="7dp"
+        android:layout_marginTop="45dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/idEvento"
+        app:srcCompat="@mipmap/ic_launcher" />
 </androidx.constraintlayout.widget.ConstraintLayout>

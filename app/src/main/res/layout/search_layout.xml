@@ -7,7 +7,7 @@
     android:layout_height="match_parent">
 
     <EditText
-        android:id="@+id/plain_text_input2"
+        android:id="@+id/zonaEdit"
         android:layout_width="162dp"
         android:layout_height="37dp"
         android:layout_marginTop="44dp"
@@ -19,17 +19,12 @@
 
     <TextView
         android:id="@+id/textView3"
-        android:layout_width="540dp"
+        android:layout_width="wrap_content"
         android:layout_height="91dp"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="360dp"
-        android:layout_marginRight="360dp"
         android:text="Busqueda:"
         android:textSize="52sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.018"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Busqueda:" />
@@ -45,6 +40,13 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView3" />
 
+    <EditText
+        android:id="@+id/cateEdit"
+        android:layout_width="162dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/searchRecycler"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <RadioGroup
         android:id="@+id/radioGroup"
         android:layout_width="134dp"
@@ -56,18 +58,18 @@
         app:layout_constraintTop_toBottomOf="@+id/textView3">
 
         <RadioButton
-            android:id="@+id/radioButton"
+            android:id="@+id/radioCuenta"
             android:layout_width="171dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Cuenta" />
+            android:text="usuarios" />
 
         <RadioButton
-            android:id="@+id/radioButton2"
+            android:id="@+id/radioEvento"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Evento" />
+            android:text="eventos" />
     </RadioGroup>
 
     <TextView
@@ -95,7 +97,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:text="Zona"
-        app:layout_constraintEnd_toStartOf="@+id/plain_text_input2"
+        app:layout_constraintEnd_toStartOf="@+id/zonaEdit"
         app:layout_constraintStart_toEndOf="@+id/radioGroup"
         app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
@@ -103,11 +105,9 @@
         android:id="@+id/calendarView"
         android:layout_width="149dp"
         android:layout_height="39dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/plain_text_input2" />
+        app:layout_constraintTop_toBottomOf="@+id/zonaEdit" />
 
     <TextView
         android:id="@+id/textView5"
@@ -136,7 +136,19 @@
         android:id="@+id/btnbusca"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="36dp"
+        android:layout_marginTop="26dp"
         android:text="BUSCAR"
-        tools:layout_editor_absoluteX="275dp"
-        tools:layout_editor_absoluteY="24dp" />
+        app:layout_constraintStart_toEndOf="@+id/textView3"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView13"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="10dp"
+        android:text="Categoria"
+        app:layout_constraintStart_toEndOf="@+id/radioGroup"
+        app:layout_constraintTop_toBottomOf="@+id/textView5" />
 </androidx.constraintlayout.widget.ConstraintLayout>
